@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../styles/Form.css";
 import useApiRequest from "../../hooks/createProduct";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 
 function Form() {
+  const navigate = useNavigate();
+
   const [id, setId] = useState("");
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -20,14 +23,35 @@ function Form() {
     fechaRevision: ""
   });
   const URLCREATE = "https://tribu-ti-staffing-desarrollo-afangwbmcrhucqfh.z01.azurefd.net/ipf-msa-productosfinancieros/bp/products";
-  const { isLoading, error, sendRequest } = useApiRequest(URLCREATE);
-  const [successMessage, setSuccessMessage] = useState(false);
+  const { sendRequest } = useApiRequest(URLCREATE);
+  const [ setSuccessMessage] = useState(false);
 
-  //const history = useHistory();
+  const location = useLocation();
+  const selectedProduct = location.state?.product;
+  const isEditing = !!selectedProduct; 
+  
+  useEffect(() => {
+    if (selectedProduct) {
+      setId(selectedProduct.id);
+      setNombre(selectedProduct.name);
+      setDescripcion(selectedProduct.description);
+      setLogo(selectedProduct.logo);
+      
+      const fechaLiberacionISO = selectedProduct.date_release;
+      const fechaLiberacion = fechaLiberacionISO.split("T")[0];
+      setFechaLiberacion(fechaLiberacion);
+      
+      const fechaRevisionISO = selectedProduct.date_release;
+      const fechaRevision = fechaRevisionISO.split("T")[0];
+      setFechaRevision(fechaRevision);
+    }
+  }, [selectedProduct]);
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Construir el objeto de datos del formulario
+    console.log(isEditing)
     const formData = {
       id: id,
       name: nombre,
@@ -36,15 +60,15 @@ function Form() {
       date_release: fechaLiberacion,
       date_revision: fechaRevision,
     };
-    sendRequest("POST", formData, 2)
-    .then(() => {
-      setSuccessMessage(true);
-    })
-    .catch((error) => {
-      console.error(error);
-      setSuccessMessage(""); // Restablecer el mensaje de éxito en caso de error
-    });
+    if(isEditing){
+      sendRequest("PUT", formData, 2)
+    }else {
+      sendRequest("POST", formData, 2)
+      navigate("/"); // Redireccionar a la ruta "/tabla" después de guardar
+    }
+    
   };
+  
   const handleReset = () => {
     setId("");
     setNombre("");
@@ -84,12 +108,11 @@ function Form() {
       fechaRevision: ""
     };
 
-    // Validar campo ID
-    if (!id) {
-      errors.id = "Campo requerido";
-    } else if (id.length < 3 || id.length > 10) {
-      errors.id = "El ID debe tener entre 3 y 10 caracteres";
-    }
+    // Validar campo ID si se está creando un nuevo producto
+      if (!isEditing && (!id || id.length < 3 || id.length > 10)) {
+        errors.id = "El ID debe tener entre 3 y 10 caracteres";
+      }
+  
 
     // Validar campo Nombre
     if (!nombre) {
@@ -146,6 +169,7 @@ function Form() {
               value={id}
               onChange={(e) => setId(e.target.value)}
               onBlur={validateForm}
+              disabled={isEditing} //Deshabilitar cuando hay un valor en 'id'
             />
             {formErrors.id && <span className="error">{formErrors.id}</span>}
           </div>
@@ -192,6 +216,7 @@ function Form() {
               type="date"
               id="fecha_liberacion"
               value={fechaLiberacion}
+              
               onChange={handleFechaLiberacionChange}
               onBlur={validateForm}
             />

@@ -19,3 +19,12 @@
     border: 1px solid #ccc;
     border-radius: 5px;
   }
+
+  .error {
+    color: red;
+    border-color: red;
+  }
+  
+  .error::placeholder {
+    color: red;
+  }

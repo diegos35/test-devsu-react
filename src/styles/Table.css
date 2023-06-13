@@ -115,3 +115,14 @@ td img {
   font-size: 16px;
   color: #fff;
 }
+
+.footer{
+  display: flex;
+  justify-content: space-between; 
+  padding: 5px;
+} 
+
+.select {
+  margin: 20px 12px ;
+  padding: 5px 12px 4px 5px;
+}
