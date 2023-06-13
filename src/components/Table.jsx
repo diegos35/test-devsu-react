@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import '../styles/Table.css';
 
 const ProductTable = ({ products }) => {
+  console.log(products)
   const [activeMenu, setActiveMenu] = useState(null);
 
   const handleEdit = (productId) => {
@@ -23,6 +24,7 @@ const ProductTable = ({ products }) => {
     }
   };
 
+  
   return (
     <div>
       <table>
@@ -33,17 +35,17 @@ const ProductTable = ({ products }) => {
           <th>Descripción</th>
           <th>Fecha de liberación</th>
           <th>Fecha de reestructuración</th>
-          <th class="menu-column"></th>
+          <th className="menu-column"></th>
         </tr>
       </thead>
       <tbody>
         {products.map((product) => (
           <tr key={product.id}>
             <td><img src={product.logo} alt={product.nombre} /></td>
-            <td>{product.nombre}</td>
-            <td>{product.descripcion}</td>
-            <td>{product.fechaLiberacion}</td>
-            <td>{product.fechaRestructuracion}</td>
+            <td>{product.name}</td>
+            <td>{product.description}</td>
+            <td>{product.date_release}</td>
+            <td>{product.date_revision}</td>
             <td>
               <div className="menu" onClick={() => toggleMenu(product.id)}>
                 <span className="icon">...</span>
