@@ -70,6 +70,12 @@ const ProductTable = ({ products }) => {
     setPaginatedProducts(slicedProducts);
   }, [productList, currentPage, pageSize]);
 
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", options);
+  }
+  
 
   return (
     <div>
@@ -115,8 +121,8 @@ const ProductTable = ({ products }) => {
               </td>
               <td>{product.name}</td>
               <td>{product.description}</td>
-              <td>{product.date_release}</td>
-              <td>{product.date_revision}</td>
+              <td>{new Date(product.date_release).toLocaleDateString()}</td>
+              <td>{new Date(product.date_revision).toLocaleDateString()}</td>
               <td>
                 <div className="menu" onClick={() => toggleMenu(product.id)}>
                   <span className="icon">...</span>
