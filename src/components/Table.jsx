@@ -9,6 +9,7 @@ const ProductTable = ({ products }) => {
   const [pageSize, setPageSize] = useState(5); // Tamaño de página seleccionado
   const [currentPage, setCurrentPage] = useState(1);
   const [paginatedProducts, setPaginatedProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const API_DELETE =
     "https://tribu-ti-staffing-desarrollo-afangwbmcrhucqfh.z01.azurefd.net/ipf-msa-productosfinancieros/bp";
@@ -45,7 +46,6 @@ const ProductTable = ({ products }) => {
   };
 
   const handlePageSizeChange = (event) => {
-    console.log(event.target.value)
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
   };
@@ -66,20 +66,25 @@ const ProductTable = ({ products }) => {
   useEffect(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const slicedProducts = productList.slice(startIndex, endIndex);
+    const filteredProducts = productList.filter((product) => {
+      const productName = product.name.toLowerCase();
+      return productName.includes(searchQuery.toLowerCase());
+    });
+    const slicedProducts = filteredProducts.slice(startIndex, endIndex);
     setPaginatedProducts(slicedProducts);
-  }, [productList, currentPage, pageSize]);
+  }, [productList, currentPage, pageSize, searchQuery]);
 
-  const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", options);
-  }
   
-
   return (
     <div>
       <div className="table-header">
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Search"
+        className="search"
+      />  
         <Link to="/form" className="add-button">
           Agregar
         </Link>

@@ -83,8 +83,7 @@ td img {
 
 .table-header {
   display: flex;
-  justify-content:right;
-  align-items: center;
+  justify-content:space-between;
   padding: 5px;
 }
 
@@ -126,3 +125,20 @@ td img {
   margin: 20px 12px ;
   padding: 5px 12px 4px 5px;
 }
+
+.search {
+  padding: 5px;
+  font-size: 14px;
+  height: 1.5rem;
+  border: 1px solid black; 
+  border-radius: 5px;
+}
+
+/* 	padding: 1rem 4rem 1rem 4rem;
+		font-family: inherit;
+		font-size: 1.4rem;
+		height: 4rem;
+		width: 100%;
+		min-width: 25rem;
+		border: 1px solid ;
+} */
