@@ -91,7 +91,7 @@ td img {
   background-color: rgb(239, 224, 15);
   color: black;
   border: none;
-  padding: 20px 12px;
+  padding: 12px 12px;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -133,12 +133,3 @@ td img {
   border: 1px solid black; 
   border-radius: 5px;
 }
-
-/* 	padding: 1rem 4rem 1rem 4rem;
-		font-family: inherit;
-		font-size: 1.4rem;
-		height: 4rem;
-		width: 100%;
-		min-width: 25rem;
-		border: 1px solid ;
-} */

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { isValidElement, useEffect, useState } from "react";
 import "../../styles/Form.css";
 import useApiRequest from "../../hooks/createProduct";
 import { useLocation, useNavigate } from "react-router-dom";
-
-
+import useIdValidation from "../../hooks/validateProduct";
 
 function Form() {
   const navigate = useNavigate();
+  const URLCREATE =
+    "https://tribu-ti-staffing-desarrollo-afangwbmcrhucqfh.z01.azurefd.net/ipf-msa-productosfinancieros/bp/products";
 
   const [id, setId] = useState("");
   const [nombre, setNombre] = useState("");
@@ -14,44 +15,51 @@ function Form() {
   const [logo, setLogo] = useState("");
   const [fechaLiberacion, setFechaLiberacion] = useState("");
   const [fechaRevision, setFechaRevision] = useState("");
+  const [isProductIdValid, setIsProductIdValid] = useState(false);
   const [formErrors, setFormErrors] = useState({
     id: "",
     nombre: "",
     descripcion: "",
     logo: "",
     fechaLiberacion: "",
-    fechaRevision: ""
+    fechaRevision: "",
   });
-  const URLCREATE = "https://tribu-ti-staffing-desarrollo-afangwbmcrhucqfh.z01.azurefd.net/ipf-msa-productosfinancieros/bp/products";
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
   const { sendRequest } = useApiRequest(URLCREATE);
-  const [ setSuccessMessage] = useState(false);
+  const [setSuccessMessage] = useState(false);
 
   const location = useLocation();
   const selectedProduct = location.state?.product;
-  const isEditing = !!selectedProduct; 
-  
+  const { isIdValid, isLoading } = useIdValidation(id);
+
+  const isEditing = !!selectedProduct;
+
   useEffect(() => {
     if (selectedProduct) {
       setId(selectedProduct.id);
       setNombre(selectedProduct.name);
       setDescripcion(selectedProduct.description);
       setLogo(selectedProduct.logo);
-      
+
       const fechaLiberacionISO = selectedProduct.date_release;
       const fechaLiberacion = fechaLiberacionISO.split("T")[0];
       setFechaLiberacion(fechaLiberacion);
-      
+
       const fechaRevisionISO = selectedProduct.date_release;
       const fechaRevision = fechaRevisionISO.split("T")[0];
       setFechaRevision(fechaRevision);
     }
   }, [selectedProduct]);
 
+  useEffect(() => {
+    console.log("isIdValid", isIdValid);
+    setIsProductIdValid(isIdValid);
+  }, [isIdValid]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Construir el objeto de datos del formulario
-    console.log(isEditing)
+
     const formData = {
       id: id,
       name: nombre,
@@ -60,15 +68,23 @@ function Form() {
       date_release: fechaLiberacion,
       date_revision: fechaRevision,
     };
-    if(isEditing){
-      sendRequest("PUT", formData, 2)
-    }else {
-      sendRequest("POST", formData, 2)
-      navigate("/"); // Redireccionar a la ruta "/tabla" después de guardar
+
+    if (isEditing) {
+      sendRequest("PUT", formData, 2);
+      alert("Producto actulizado con exito");
+      //navigate("/"); 
+    } else {
+      if (!isProductIdValid) {
+        sendRequest("POST", formData, 2);
+        alert("Producto guardado con exito");
+      } else {
+        alert("El ID del producto no es válido");
+        console.log("El ID del producto no es válido");
+      }
     }
-    
+    navigate("/"); 
   };
-  
+
   const handleReset = () => {
     setId("");
     setNombre("");
@@ -76,15 +92,14 @@ function Form() {
     setLogo("");
     setFechaLiberacion("");
     setFechaRevision("");
-    const [formErrors, setFormErrors] = useState({
+    setFormErrors({
       id: "",
       nombre: "",
       descripcion: "",
       logo: "",
       fechaLiberacion: "",
-      fechaRevision: ""
+      fechaRevision: "",
     });
-    
   };
 
   const handleFechaLiberacionChange = (e) => {
@@ -105,14 +120,13 @@ function Form() {
       descripcion: "",
       logo: "",
       fechaLiberacion: "",
-      fechaRevision: ""
+      fechaRevision: "",
     };
 
     // Validar campo ID si se está creando un nuevo producto
-      if (!isEditing && (!id || id.length < 3 || id.length > 10)) {
-        errors.id = "El ID debe tener entre 3 y 10 caracteres";
-      }
-  
+    if (!isEditing && (!id || id.length < 3 || id.length > 10)) {
+      errors.id = "El ID debe tener entre 3 y 10 caracteres";
+    }
 
     // Validar campo Nombre
     if (!nombre) {
@@ -125,7 +139,8 @@ function Form() {
     if (!descripcion) {
       errors.descripcion = "Campo requerido";
     } else if (descripcion.length < 10 || descripcion.length > 200) {
-      errors.descripcion = "La descripción debe tener entre 10 y 200 caracteres";
+      errors.descripcion =
+        "La descripción debe tener entre 10 y 200 caracteres";
     }
 
     // Validar campo Logo
@@ -140,7 +155,8 @@ function Form() {
       const fechaLiberacionDate = new Date(fechaLiberacion);
       const currentDate = new Date();
       if (fechaLiberacionDate < currentDate) {
-        errors.fechaLiberacion = "La fecha debe ser igual o mayor a la fecha actual";
+        errors.fechaLiberacion =
+          "La fecha debe ser igual o mayor a la fecha actual";
       }
     }
 
@@ -150,6 +166,12 @@ function Form() {
     }
 
     setFormErrors(errors);
+
+    // Verificar si hay errores en los campos
+    const hasErrors = Object.values(errors).some((error) => error !== "");
+
+    // Actualizar el estado isButtonDisabled
+    setIsButtonDisabled(hasErrors);
   };
 
   const isFormValid = () => {
@@ -158,7 +180,8 @@ function Form() {
 
   return (
     <div>
-      <h2>Formulario</h2>
+      <h2>Formulario de registro</h2>
+      <hr />
       <form onSubmit={handleSubmit}>
         <div className="form-container">
           <div className="form-group">
@@ -182,7 +205,9 @@ function Form() {
               onChange={(e) => setNombre(e.target.value)}
               onBlur={validateForm}
             />
-            {formErrors.nombre && <span className="error">{formErrors.nombre}</span>}
+            {formErrors.nombre && (
+              <span className="error">{formErrors.nombre}</span>
+            )}
           </div>
         </div>
         <div className="form-container">
@@ -195,7 +220,9 @@ function Form() {
               onChange={(e) => setDescripcion(e.target.value)}
               onBlur={validateForm}
             />
-            {formErrors.descripcion && <span className="error">{formErrors.descripcion}</span>}
+            {formErrors.descripcion && (
+              <span className="error">{formErrors.descripcion}</span>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="logo">Logo</label>
@@ -206,7 +233,9 @@ function Form() {
               onChange={(e) => setLogo(e.target.value)}
               onBlur={validateForm}
             />
-            {formErrors.logo && <span className="error">{formErrors.logo}</span>}
+            {formErrors.logo && (
+              <span className="error">{formErrors.logo}</span>
+            )}
           </div>
         </div>
         <div className="form-container">
@@ -216,11 +245,12 @@ function Form() {
               type="date"
               id="fecha_liberacion"
               value={fechaLiberacion}
-              
               onChange={handleFechaLiberacionChange}
               onBlur={validateForm}
             />
-            {formErrors.fechaLiberacion && <span className="error">{formErrors.fechaLiberacion}</span>}
+            {formErrors.fechaLiberacion && (
+              <span className="error">{formErrors.fechaLiberacion}</span>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="fecha_revision">Fecha de Revisión</label>
@@ -230,15 +260,22 @@ function Form() {
               value={fechaRevision}
               disabled
             />
-            {formErrors.fechaRevision && <span className="error">{formErrors.fechaRevision}</span>}
+            {formErrors.fechaRevision && (
+              <span className="error">{formErrors.fechaRevision}</span>
+            )}
           </div>
         </div>
 
         <div className="form-actions">
-          <button type="button" onClick={handleReset}>
+          <button
+            type="button"
+            className="button_reiniciar"
+            onClick={handleReset}
+            disabled={isButtonDisabled}
+          >
             Reiniciar
           </button>
-          <button type="submit" disabled={!isFormValid()}>
+          <button type="submit" disabled={isButtonDisabled}>
             Enviar
           </button>
         </div>
