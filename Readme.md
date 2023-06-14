@@ -1,4 +1,4 @@
-(https://github.com/diegos35/test-devsu/blob/main/src/assets/image.png?raw=true)
+https://raw.githubusercontent.com/diegos35/test-devsu/main/src/assets/image.png
 
 init project 
 
